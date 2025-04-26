@@ -1,18 +1,11 @@
 <?php
-$host = 'serverl.mysql.database.azure.com';       // IP privada o DNS interno del MySQL Flexible Server en PRD
-$user = 'rooot';            // Tu usuario de MySQL
-$pass = 'Rut12345';         // Tu contraseña
-$db   = 'mysqlprod21';      // Tu base de datos en MySQL
+$con = mysqli_init();
+mysqli_ssl_set($con, NULL, NULL, NULL, NULL, NULL);
+mysqli_real_connect($con, "server1.mysql.database.azure.com", "rooot", "Rut12345", "main", 3306, NULL, MYSQLI_CLIENT_SSL);
 
-// Conexión
-$conn = new mysqli($host, $user, $pass, $db,3306,MYSQLI_CLIENT_SSL);
-
-// Validar conexión
-if ($conn->connect_error) {
-    die("❌ Error de conexión: " . $conn->connect_error);
+if (mysqli_connect_errno()) {
+    die("❌ Conexión fallida: " . mysqli_connect_error());
 } else {
-    echo "✅ Conexión exitosa a MySQL desde App Service.<br>";
+    echo "✅ Conectado correctamente a MySQL.";
 }
-
-$conn->close();
 ?>

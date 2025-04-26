@@ -1,25 +1,41 @@
 <?php
-$con = mysqli_init();
+// Activar errores visibles
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-// Iniciar SSL (sin necesidad de certificados explícitos, porque estás dentro de Azure)
-mysqli_ssl_set($con, NULL, NULL, NULL, NULL, NULL);
+echo "<h2>Validando conexión a bases de datos...</h2>";
 
-// Conexión segura
-mysqli_real_connect(
-    $con,
-    "10.167.0.4",        // IP privada de tu MySQL en PRD
-    "rooot@mysqlserver", // Usuario (puede requerir @mysqlserver si es Flexible Server)
-    "Rut12345",          // Contraseña
-    "mysqlprod21",       // Base de datos
-    3306,
-    NULL,
-    MYSQLI_CLIENT_SSL    // <- Importante
+// --- Primero PostgreSQL (puerto 5432 explícito) ---
+//$pg_conn = pg_connect(
+//    "host=10.161.2.4 " .
+//   "port=5432 " .
+ //   "dbname=postgres " .
+ //   "user=Tiancris " .
+//    "password=#Zarache060221 " .
+//    "sslmode=require"
+//);
+
+if ($pg_conn) {
+    echo "<p style='color:green;'>✅ Conexión exitosa a PostgreSQL</p>";
+    pg_close($pg_conn);
+} else {
+    echo "<p style='color:red;'>❌ Error PostgreSQL: " . pg_last_error() . "</p>";
+}
+
+// --- Luego MySQL (puerto 3306 explícito) ---
+$mysql = mysqli_connect(
+    "10.167.0.4",    // Host MySQL
+    "rooot",      // Usuario
+    "Rut12345",// Contraseña
+    "",              // Base de datos (vacío si no aplica)
+    3306             // Puerto
 );
 
-// Validar
-if (mysqli_connect_errno()) {
-    die("❌ Error de conexión: " . mysqli_connect_error());
+if ($mysql) {
+    echo "<p style='color:green;'>✅ Conexión exitosa a MySQL</p>";
+    mysqli_close($mysql);
 } else {
-    echo "✅ Conectado correctamente a MySQL con SSL desde App Service.<br>";
+    echo "<p style='color:red;'>❌ Error MySQL: " . mysqli_connect_error() . "</p>";
 }
 ?>

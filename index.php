@@ -8,7 +8,7 @@ echo "<h2>Validando conexión a bases de datos...</h2>";
 
 // --- Luego MySQL (puerto 3306 explícito) ---
 $mysql = mysqli_connect(
-    "serverl.mysql.database.azure.com",    // Host MySQL
+    "10.167.0.4",    // Host MySQL
     "rooot",      // Usuario
     "Rut12345",// Contraseña
     "",              // Base de datos (vacío si no aplica)

@@ -24,18 +24,35 @@ echo "<h2>Validando conexión a bases de datos...</h2>";
 //}
 
 // --- Luego MySQL (puerto 3306 explícito) ---
-$mysql = mysqli_connect(
-    "10.167.0.4",    // Host MySQL
-    "rooot",      // Usuario
-    "Rut12345",// Contraseña
-    "",              // Base de datos (vacío si no aplica)
-    3306             // Puerto
+$con = mysqli_init();
+
+// Configuramos SSL (no necesitas rutas a certificados en Azure interno)
+mysqli_ssl_set($con, NULL, NULL, NULL, NULL, NULL);
+
+// Parámetros de conexión
+$host     = "10.167.0.4";     // IP privada de tu MySQL en PRD
+$user     = "rooot";          // Usuario MySQL
+$pass     = "Rut12345";       // Contraseña MySQL
+$db       = "";    // Nombre de la base de datos
+$port     = 3306;             // Puerto MySQL
+
+// Conexión segura
+mysqli_real_connect(
+    $con,
+    $host,
+    $user,
+    $pass,
+    $db,
+    $port,
+    NULL,
+    MYSQLI_CLIENT_SSL
 );
 
-if ($mysql) {
-    echo "<p style='color:green;'>✅ Conexión exitosa a MySQL</p>";
-    mysqli_close($mysql);
+// Validamos
+if (mysqli_connect_errno()) {
+    echo "<p style='color:red;'>❌ Error MySQL (SSL): " . mysqli_connect_error() . "</p>";
 } else {
-    echo "<p style='color:red;'>❌ Error MySQL: " . mysqli_connect_error() . "</p>";
+    echo "<p style='color:green;'>✅ Conexión SSL exitosa a MySQL</p>";
+    mysqli_close($con);
 }
 ?>

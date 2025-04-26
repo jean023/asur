@@ -16,12 +16,12 @@ echo "<h2>Validando conexión a bases de datos...</h2>";
 //    "sslmode=require"
 //);
 
-if ($pg_conn) {
-    echo "<p style='color:green;'>✅ Conexión exitosa a PostgreSQL</p>";
-    pg_close($pg_conn);
-} else {
-    echo "<p style='color:red;'>❌ Error PostgreSQL: " . pg_last_error() . "</p>";
-}
+//if ($pg_conn) {
+ //   echo "<p style='color:green;'>✅ Conexión exitosa a PostgreSQL</p>";
+ //   pg_close($pg_conn);
+//} else {
+//    echo "<p style='color:red;'>❌ Error PostgreSQL: " . pg_last_error() . "</p>";
+//}
 
 // --- Luego MySQL (puerto 3306 explícito) ---
 $mysql = mysqli_connect(

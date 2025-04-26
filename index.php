@@ -36,7 +36,7 @@ function getMySqlConnection() {
     $host = "10.167.0.4";
     $user = "rooot";
     $pass = "Rut12345";
-    $db   = "mysqlprod21";
+    $db   = "main";
     $port = 3306;
 
     $con = mysqli_init();

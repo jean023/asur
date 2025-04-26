@@ -7,11 +7,11 @@ error_reporting(E_ALL);
 echo "<h2>Validando conexión a bases de datos...</h2>";
 
 // --- Primero PostgreSQL (puerto 5432 explícito) ---
-$pg_host   = '10.167.2.4';           
-$pg_port   = '5432';                 
-$pg_dbname = 'postgres';             
-$pg_user   = 'rooot';      
-$pg_pass   = 'Rut12345';             
+$pg_host   = '10.167.2.4';
+$pg_port   = '5432';
+$pg_dbname = 'postgres';
+$pg_user   = 'rooot';
+$pg_pass   = 'Rut12345';
 
 $conn_str = sprintf(
     'host=%s port=%s dbname=%s user=%s password=%s sslmode=require',
@@ -25,10 +25,9 @@ $conn_str = sprintf(
 $pg_conn = pg_connect($conn_str);
 if (!$pg_conn) {
     $err = pg_last_error();
-    echo "<p style='color:red;'>❌ Error al conectar PostgreSQL: {$err}</p>";
+    echo "<div class='message error'>❌ Error al conectar PostgreSQL: {$err}</div>";
     exit;
 }
-echo "<p style='color:green;'>✅ Conexión SSL exitosa a PostgreSQL</p>";
 pg_close($pg_conn);
 
 // --- Función de conexión MySQL con SSL ---
@@ -53,13 +52,13 @@ function getMySqlConnection() {
     );
 
     if (mysqli_connect_errno()) {
-        die("<p style='color:red;'>❌ Error MySQL (SSL): " . mysqli_connect_error() . "</p>");
+        die("<div class='message error'>❌ Error MySQL (SSL): " . mysqli_connect_error() . "</div>");
     }
     return $con;
 }
 
 // --- Función de registro ---
-function registerUser($username, $password) {
+function registerUser($nombre, $username, $password) {
     $con = getMySqlConnection();
     // Verificar existencia
     $stmt = $con->prepare("SELECT id FROM usuarios WHERE usuario = ?");
@@ -67,7 +66,7 @@ function registerUser($username, $password) {
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows > 0) {
-        echo "<p style='color:red;'>❌ El usuario '{$username}' ya existe.</p>";
+        echo "<div class='message error'>❌ El usuario '{$username}' ya existe.</div>";
         $stmt->close();
         $con->close();
         return;
@@ -76,11 +75,11 @@ function registerUser($username, $password) {
     // Insertar con hash
     $hash = password_hash($password, PASSWORD_DEFAULT);
     $stmt = $con->prepare("INSERT INTO usuarios (nombre, usuario, contrasena) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $username, $username, $hash);
+    $stmt->bind_param("sss", $nombre, $username, $hash);
     if ($stmt->execute()) {
-        echo "<p style='color:green;'>✅ Usuario '{$username}' registrado correctamente.</p>";
+        echo "<div class='message success'>✅ Usuario '{$username}' registrado correctamente.</div>";
     } else {
-        echo "<p style='color:red;'>❌ Error al registrar: " . $stmt->error . "</p>";
+        echo "<div class='message error'>❌ Error al registrar: " . $stmt->error . "</div>";
     }
     $stmt->close();
     $con->close();
@@ -95,7 +94,7 @@ function loginUser($username, $password) {
     $stmt->execute();
     $stmt->bind_result($hash);
     if (!$stmt->fetch()) {
-        echo "<p style='color:red;'>❌ Usuario '{$username}' no encontrado.</p>";
+        echo "<div class='message error'>❌ Usuario '{$username}' no encontrado.</div>";
         $stmt->close();
         $con->close();
         return;
@@ -103,9 +102,9 @@ function loginUser($username, $password) {
     $stmt->close();
     // Verificar contraseña
     if (password_verify($password, $hash)) {
-        echo "<p style='color:green;'>✅ Login exitoso. ¡Bienvenido, {$username}!</p>";
+        echo "<div class='message success'>✅ Login exitoso. ¡Bienvenido, {$username}!</div>";
     } else {
-        echo "<p style='color:red;'>❌ Contraseña incorrecta.</p>";
+        echo "<div class='message error'>❌ Contraseña incorrecta.</div>";
     }
     $con->close();
 }
@@ -113,43 +112,123 @@ function loginUser($username, $password) {
 // --- Lógica de recepción de formulario ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action   = $_POST['action']   ?? '';
+    $nombre   = trim($_POST['nombre']   ?? '');
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($action === 'register') {
-        registerUser($username, $password);
+        registerUser($nombre, $username, $password);
     } elseif ($action === 'login') {
         loginUser($username, $password);
     } else {
-        echo "<p style='color:orange;'>⚠️ Acción inválida.</p>";
+        echo "<div class='message error'>⚠️ Acción inválida.</div>";
     }
     exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Auth PHP en App Service</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+      background: #fff;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      color: #555;
+    }
+    input[type="text"],
+    input[type="password"] {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 20px 0;
+    }
+    .message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .message.success {
+      background: #e6ffed;
+      color: #2f6627;
+    }
+    .message.error {
+      background: #ffe6e6;
+      color: #a12f2f;
+    }
+  </style>
 </head>
 <body>
-  <h2>Register</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="register">
-    <label>Usuario: <input type="text" name="username" required></label><br>
-    <label>Contraseña: <input type="password" name="password" required></label><br>
-    <button type="submit">Registrar</button>
-  </form>
+  <div class="container">
+    <h2>Register</h2>
+    <form method="post">
+      <input type="hidden" name="action" value="register">
+      <label>Nombre:
+        <input type="text" name="nombre" required>
+      </label>
+      <label>Usuario:
+        <input type="text" name="username" required>
+      </label>
+      <label>Contraseña:
+        <input type="password" name="password" required>
+      </label>
+      <button type="submit">Registrar</button>
+    </form>
 
-  <hr>
+    <hr>
 
-  <h2>Login</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="login">
-    <label>Usuario: <input type="text" name="username" required></label><br>
-    <label>Contraseña: <input type="password" name="password" required></label><br>
-    <button type="submit">Entrar</button>
-  </form>
+    <h2>Login</h2>
+    <form method="post">
+      <input type="hidden" name="action" value="login">
+      <label>Usuario:
+        <input type="text" name="username" required>
+      </label>
+      <label>Contraseña:
+        <input type="password" name="password" required>
+      </label>
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
 </body>
 </html>
